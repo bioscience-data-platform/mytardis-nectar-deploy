@@ -1,0 +1,14 @@
+[basic]
+USER_NAME = "centos" #account name of instance
+PASSWORD = ""  #account password of instance
+PRIVATE_KEY = "/path/to/nectar_id"  #The nectar private key
+PRIVATE_KEY_NAME = "your_key" #the name of the private key
+SECURITY_GROUP = ["ssh"]
+VM_SIZE = "m1.small"
+
+SLEEP_TIME = 10 # time to wait before polling finished job in seconds
+RETRY_ATTEMPTS = 10 # number of times to try accessing package PID
+
+EC2_ACCESS_KEY=""
+EC2_SECRET_KEY=""
+CLOUD_SLEEP_INTERVAL=5
