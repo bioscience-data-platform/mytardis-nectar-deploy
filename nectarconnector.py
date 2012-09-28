@@ -59,7 +59,7 @@ def destroy_VM_instance(settings, connection, ip_address):
     print("Terminating VM instance %s" % ip_address)
     if _is_instance_running(connection, ip_address):
         try:
-            instance = _get_this_instance(connection, ip_address, ip_given=True)
+            instance = get_this_instance(connection, ip_address, ip_given=True)
             if not confirm_teardown(settings):
                 return
             connection.destroy_node(instance)
@@ -70,7 +70,7 @@ def destroy_VM_instance(settings, connection, ip_address):
         print "VM instance with IP %s doesn't exist" % ip_address
 
 
-def _get_this_instance(connection, instance_id_ip, ip_given=False):
+def get_this_instance(connection, instance_id_ip, ip_given=False):
     instances = connection.list_nodes()
     for instance in instances:
         if ip_given:
@@ -85,7 +85,7 @@ def _get_this_instance(connection, instance_id_ip, ip_given=False):
 def _wait_for_instance_to_start_running(settings, connection, instance):
     instance_id = instance.name
     while True:
-        instance = _get_this_instance(connection, instance_id)
+        instance = get_this_instance(connection, instance_id)
         instance_state = instance.state
         instance_ip_list = instance.public_ips
         print('Current status of Instance %s: %s, IP: %s'
@@ -96,7 +96,7 @@ def _wait_for_instance_to_start_running(settings, connection, instance):
 
 
 def _wait_for_instance_to_terminate(settings, connection, ip_address):
-    instance = _get_this_instance(connection, ip_address, ip_given=True)
+    instance = get_this_instance(connection, ip_address, ip_given=True)
     instance_id = instance.name
     
     while _is_instance_running(connection, ip_address):

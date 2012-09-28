@@ -52,8 +52,8 @@ def start():
         #print("%s" % field_val)
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ct:d:",\
-                                   ["create=", "test", "destroy"])
+        opts, args = getopt.getopt(sys.argv[1:], "cm:t:d:",\
+                                   ["create=", "mytardis", "test", "destroy"])
     except getopt.GetoptError:
    #print help info and exit:
         print("Couldn't parse arguments")
@@ -65,8 +65,11 @@ def start():
     for opt, val in opts:
         if opt in ("-c", "--create"):
             step = "create"
+        if opt in ("-m", "--mytardis"):
+            step = "mytardis"
         if opt in ("-t", "--test"):
             step = "test"
+            ip_address = val
             ip_address = val
         if opt in ("-d", "--destroy"):
             step = "destroy"
@@ -76,16 +79,24 @@ def start():
         connection = create_cloud_connection(settings)
         create_VM_instance(settings, connection)
         
+    elif step == "mytardis":
+        connection = create_cloud_connection(settings)
+        instance = get_this_instance(connection, ip_address, ip_given=True)
+        instance_id = instance.name
+        deploy_mytardis_with_chef(settings, ip_address, instance_id)
         
     elif step == "test":
-        print step, ip_address
+        connection = create_cloud_connection(settings)
+        instance = get_this_instance(connection, ip_address, ip_given=True)
+        instance_id = instance.name
+        test_mytardis_deployment(settings,ip_address,instance_id)        
+        
     elif step == "destroy":
         connection = create_cloud_connection(settings)
         destroy_VM_instance(settings, connection, ip_address)
     
-    
     else:
-        print "Not create"
+        print "Unknown Option"
         
         
 if __name__ == '__main__':
