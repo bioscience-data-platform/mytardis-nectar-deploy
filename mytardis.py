@@ -34,7 +34,8 @@ def start():
                       'SLEEP_TIME', 'RETRY_ATTEMPTS',
                       'EC2_ACCESS_KEY', 'EC2_SECRET_KEY',
                       'CLOUD_SLEEP_INTERVAL', 'PRIVATE_KEY_NAME',
-                      'SECURITY_GROUP']
+                      'SECURITY_GROUP', 'PATH_CHEF_CONFIG', 
+                      'MYTARDIS_BRANCH_URL', 'MYTARDIS_BRANCH_NAME']
 
     import json
     settings = type('', (), {})()
@@ -82,15 +83,19 @@ def start():
     elif step == "mytardis":
         connection = create_cloud_connection(settings)
         instance = get_this_instance(connection, ip_address, ip_given=True)
-        instance_id = instance.name
-        deploy_mytardis_with_chef(settings, ip_address, instance_id)
+        if instance:
+            instance_id = instance.name
+            if is_ssh_ready(settings, ip_address):
+                deploy_mytardis_with_chef(settings, ip_address, instance_id)
         
     elif step == "test":
         connection = create_cloud_connection(settings)
         instance = get_this_instance(connection, ip_address, ip_given=True)
-        instance_id = instance.name
-        test_mytardis_deployment(settings,ip_address,instance_id)        
-        
+        if instance:
+            instance_id = instance.name
+            if is_ssh_ready(settings, ip_address):
+                test_mytardis_deployment(settings,ip_address,instance_id)        
+            
     elif step == "destroy":
         connection = create_cloud_connection(settings)
         destroy_VM_instance(settings, connection, ip_address)

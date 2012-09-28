@@ -1,9 +1,12 @@
 import paramiko
 import os
+import sys
+from time import sleep
+import traceback
 
 def deploy_mytardis_with_chef(settings, ip_address, instance_id):
     ssh = _open_connection(settings, ip_address)
-    os.chdir("/home/centos/chef-repo")
+    os.chdir(settings.PATH_CHEF_CONFIG)
     _set_up_chef_client(settings, ip_address, instance_id, ssh)
     
 def _set_up_chef_client(settings, ip_address, instance_id, ssh):   
@@ -11,13 +14,13 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh):
     os.system(command)
     command = "yum install -y git"
     _run_sudo_command(ssh, command, settings, instance_id)
-    command = "git clone https://github.com/mytardis/mytardis-chef.git\n\
+    command = "git clone %s\n\
     cd mytardis-chef\n\
     git branch -a\n\
-    git checkout app_revert"
+    git checkout %s" % (settings.MYTARDIS_BRANCH_URL, settings.MYTARDIS_BRANCH_NAME)
     _run_sudo_command(ssh, command, settings, instance_id)
     
-    command = "scp -r -i %s /home/centos/chef-repo/.chef %s@%s:/home/centos/" % (settings.PRIVATE_KEY, settings.USER_NAME, ip_address)
+    command = "scp -r -i %s %s/.chef %s@%s:/home/centos/" % (settings.PRIVATE_KEY, settings.PATH_CHEF_CONFIG, settings.USER_NAME, ip_address)
     print command
     os.system(command)
     
@@ -25,8 +28,8 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh):
     sudo  cp -r .chef/* /etc/chef/\n\
     knife client list\n\
     knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n\
-    knife role from file /home/centos/mytardis-chef/roles/mytardis.json\n\
-    knife node run_list add  %s 'role[mytardis]'" % instance_id
+    knife role from file /home/centos/mytardis-chef/roles/mytardis-bdp-milestone1.json\n\
+    knife node run_list add  %s 'role[mytardis-bdp-milestone1]'" % instance_id
     _run_sudo_command(ssh, command, settings, instance_id)
     command = "sudo chef-client"
     _run_sudo_command(ssh, command, settings, instance_id)
@@ -39,6 +42,18 @@ def test_mytardis_deployment(settings, ip_address, instance_id):
     res = _run_sudo_command(ssh, command, settings, instance_id)
     #print res
        
+def is_ssh_ready(settings, ip_address):
+    ssh_ready = False
+    while not ssh_ready:
+        try:
+            ssh = _open_connection(settings, ip_address)
+            ssh_ready = True
+        except Exception, e:
+            sleep(settings.CLOUD_SLEEP_INTERVAL)
+            print ("Connecting to %s in progress ..." % ip_address)
+            traceback.print_exc(file=sys.stdout)
+    return ssh_ready
+
     
 def _open_connection(settings, ip_address):
     # open up the connection
@@ -102,4 +117,3 @@ def _run_sudo_command(ssh, command, settings, instance_id):
     chan.close()
     print full_buff
     return (full_buff, '')
-

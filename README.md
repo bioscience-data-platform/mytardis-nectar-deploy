@@ -1,13 +1,19 @@
-Installation
+Installation:
 
 sudo yum install -y git python-devel python-setuptools gcc virtualenv
+
 git clone https://github.com/iiman/mytarids-on-nectar.git
+
 cd mytardis-chef
+
 virtualenv .
+
 source bin/activate
+
 pip install -r requirements.txt
 
-Assumptions
+Assumptions:
+
 The installation is done on a Chef workstation
 
 Run options

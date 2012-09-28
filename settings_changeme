@@ -13,3 +13,8 @@ RETRY_ATTEMPTS = 10 # number of times to try accessing package PID
 EC2_ACCESS_KEY=""
 EC2_SECRET_KEY=""
 CLOUD_SLEEP_INTERVAL=5
+
+PATH_CHEF_CONFIG = "" # Path to .chef directory. The contents of .chef/ are USER.pem, ORGANISATION-validator.pem and knife.rb. The file permission of the *.pem files must be 600.
+
+MYTARDIS_BRANCH_URL = "https://github.com/mytardis/mytardis-chef.git" # The URL to the branch of mytardis
+MYTARDIS_BRANCH_NAME = "exampledata" # Name of MyTardis branch
