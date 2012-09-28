@@ -1,30 +1,36 @@
-Installation:
+##Assumptions
 
-sudo yum install -y git python-devel python-setuptools gcc virtualenv
+The commands in this tool are executed from a Chef workstation
 
-git clone https://github.com/iiman/mytarids-on-nectar.git
 
-cd mytardis-chef
+##Installation
 
-virtualenv .
+###Install packages
+	sudo yum install -y git python-devel python-setuptools gcc virtualenv
 
-source bin/activate
+	git clone https://github.com/iiman/mytarids-on-nectar.git
 
-pip install -r requirements.txt
 
-Assumptions:
+###Prepare your working environment
+	cd mytardis-chef
 
-The installation is done on a Chef workstation
+	virtualenv .
 
-Run options
-# Creating VM
+	source bin/activate
+
+	pip install -r requirements.txt
+
+
+##Run options
+
+Creating VM
 	python mytardis.py -c 
 
-# Deploying MyTardis to the VM using Chef
+Deploying MyTardis to the VM using Chef
 	python mytardis.py -m VM_IP_ADDRESS 
 
-# Testing MyTardis deployment
+Testing MyTardis deployment
 	python mytardis.py -t VM_IP_ADDRESS
 
-# Destroying VM instance	
-python mytardis.py -d VM_IP_ADDRESS
+Destroying VM instance	
+	python mytardis.py -d VM_IP_ADDRESS
