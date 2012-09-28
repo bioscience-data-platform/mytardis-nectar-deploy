@@ -67,9 +67,9 @@ def start():
             step = "create"
         if opt in ("-m", "--mytardis"):
             step = "mytardis"
+            ip_address = val
         if opt in ("-t", "--test"):
             step = "test"
-            ip_address = val
             ip_address = val
         if opt in ("-d", "--destroy"):
             step = "destroy"

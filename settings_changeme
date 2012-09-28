@@ -1,8 +1,8 @@
 [basic]
 USER_NAME = "centos" #account name of instance
 PASSWORD = ""  #account password of instance
-PRIVATE_KEY = "/path/to/nectar_id"  #The nectar private key
-PRIVATE_KEY_NAME = "your_key" #the name of the private key
+PRIVATE_KEY = "/path/to/nectar_private_key"  #The nectar private key
+PRIVATE_KEY_NAME = "the_name_of_your_key" #the name of the private key
 SECURITY_GROUP = ["ssh"]
 VM_SIZE = "m1.small"
 VM_IMAGE= "ami-0000000d"

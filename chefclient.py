@@ -37,7 +37,7 @@ def test_mytardis_deployment(settings, ip_address, instance_id):
     command = "cd /opt/mytardis/current\n\
     sudo -u mytardis bin/django test --settings=tardis.test_settings"
     res = _run_sudo_command(ssh, command, settings, instance_id)
-    print res
+    #print res
        
     
 def _open_connection(settings, ip_address):
@@ -100,5 +100,6 @@ def _run_sudo_command(ssh, command, settings, instance_id):
     full_buff += buff
 
     chan.close()
+    print full_buff
     return (full_buff, '')
 
