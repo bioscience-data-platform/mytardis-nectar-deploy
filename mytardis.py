@@ -18,7 +18,7 @@ def start():
     '''
     import ConfigParser
     config = ConfigParser.RawConfigParser()
-    config_file = os.path.expanduser("settings")
+    config_file = os.path.expanduser("~/.mytarids-on-nectar/settings")
     if os.path.exists(config_file):
         config.read(config_file)
     else:
