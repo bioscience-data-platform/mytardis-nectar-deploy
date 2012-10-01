@@ -20,21 +20,24 @@ The commands in this tool are executed from a Chef workstation
 
 	pip install -r requirements.txt
 
+	cp settings_changeme settings
+
+NB: Edit *settings* file as needed.
 
 ##Run options
 
 Creating VM
 
-	`python mytardis.py -c` 
+	python mytardis.py -c
 
 Deploying MyTardis to the VM using Chef
 
-	`python mytardis.py -m VM_IP_ADDRESS`
+	python mytardis.py -m VM_IP_ADDRESS
 
 Testing MyTardis deployment
 
-	`python mytardis.py -t VM_IP_ADDRESS`
+	python mytardis.py -t VM_IP_ADDRESS
 
 Destroying VM instance	
 
-	`python mytardis.py -d VM_IP_ADDRESS`
+	python mytardis.py -d VM_IP_ADDRESS
