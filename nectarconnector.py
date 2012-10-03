@@ -134,8 +134,9 @@ def _is_instance_running(connection, ip_address):
     instance_running = False
     all_instances = connection.list_nodes()
     for instance in all_instances:
-        if instance.public_ips[0] == ip_address and instance.state == NodeState.RUNNING:
-            return True
+        if instance.state == NodeState.RUNNING:
+	    if instance.public_ips[0] == ip_address:
+                return True
     return False
        
 
