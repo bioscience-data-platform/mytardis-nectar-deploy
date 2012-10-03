@@ -7,13 +7,17 @@ from libcloud.compute.types import Provider
 from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 
+import libcloud.security
+
+libcloud.security.VERIFY_SSL_CERT = False
+
 NODE_STATE = ['RUNNING', 'REBOOTING', 'TERMINATED', 'PENDING', 'UNKNOWN']
 
 def create_cloud_connection(settings):
     OpenstackDriver = get_driver(Provider.EUCALYPTUS)
     print("Connecting... %s" % OpenstackDriver)
     connection = OpenstackDriver(settings.EC2_ACCESS_KEY, secret=settings.EC2_SECRET_KEY,
-                           host="nova.rc.nectar.org.au", secure=False,
+                           host="nova.rc.nectar.org.au", secure=True,
                            port=8773, path="/services/Cloud")
     #logger.debug("Connected")
     print("Connected")
