@@ -52,34 +52,9 @@ def is_ssh_ready(settings, ip_address):
         except Exception, e:
             sleep(settings.CLOUD_SLEEP_INTERVAL)
             print ("Connecting to %s in progress ..." % ip_address)
-            traceback.print_exc(file=sys.stdout)
+            #traceback.print_exc(file=sys.stdout)
     return ssh_ready
 
-'''    
-def _open_connection(settings, ip_address):
-    # open up the connection
-    ssh = paramiko.SSHClient()
-    # autoaccess new keys
-    ssh.load_system_host_keys(os.path.expanduser(os.path.join("~",
-                                                              ".ssh",
-                                                              "known_hosts")))
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    #TODO: handle exceptions if connection does not work.
-    # use private key if exists
-    if os.path.exists(settings.PRIVATE_KEY):
-        privatekeyfile = os.path.expanduser(settings.PRIVATE_KEY)
-        mykey = paramiko.RSAKey.from_private_key_file(privatekeyfile)
-        ssh.connect(ip_address, username=settings.USER_NAME, timeout=60, pkey=mykey)
-    else:
-        print("%s %s %s" % (ip_address, settings.USER_NAME, settings.PASSWORD))
-        print(ssh)
-        ssh.connect(ip_address, username=settings.USER_NAME,
-                    password=settings.PASSWORD, timeout=60)
-
-    #channel = ssh.invoke_shell().open_session()
-    return ssh
-'''
 
 def _open_connection(settings, ip_address):
     # open up the connection
