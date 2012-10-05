@@ -7,8 +7,14 @@ import time
 
 import logging
 
-from nectarconnector import *
-from chefclient import *
+from nectarconnector import create_cloud_connection
+from nectarconnector import create_VM_instance
+from nectarconnector import destroy_VM_instance
+from nectarconnector import get_this_instance
+
+from chefclient import deploy_mytardis_with_chef
+from chefclient import test_mytardis_deployment
+from chefclient import is_ssh_ready
 
 def start():
 
