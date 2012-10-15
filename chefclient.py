@@ -1,9 +1,10 @@
-import paramiko
 import os
 import sys
 from time import sleep
 import traceback
 import ssh
+import socket
+
 
 def deploy_mytardis_with_chef(settings, ip_address, instance_id):
     ssh_client = _open_connection(settings, ip_address)
@@ -49,10 +50,13 @@ def is_ssh_ready(settings, ip_address):
         try:
             _open_connection(settings, ip_address)
             ssh_ready = True
-        except Exception, e:
+        except socket.error:
             sleep(settings.CLOUD_SLEEP_INTERVAL)
             print ("Connecting to %s in progress ..." % ip_address)
             #traceback.print_exc(file=sys.stdout)
+        except ssh.AuthenticationException:
+            sleep(settings.CLOUD_SLEEP_INTERVAL)
+            print ("Connecting to %s in progress ..." % ip_address)
     return ssh_ready
 
 
@@ -63,8 +67,8 @@ def _open_connection(settings, ip_address):
     ssh_client.load_system_host_keys(os.path.expanduser(os.path.join("~",
                                                               ".ssh",
                                                               "known_hosts")))
-    #ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_client.set_missing_host_key_policy(ssh.WarningPolicy())
+    
+    ssh_client.set_missing_host_key_policy(ssh.AutoAddPolicy())
     
     #TODO: handle exceptions if connection does not work.
     # use private key if exists
@@ -95,6 +99,7 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
         resp = chan.recv(buff_size)
         #print("resp=%s" % resp)
         buff += resp
+        print resp
     #print("buff = %s" % buff)
     full_buff += buff
 
@@ -115,6 +120,7 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
         resp = chan.recv(buff_size)
         #print("resp=%s" % resp)
         buff += resp
+        print resp
    # print("3buff = %s" % buff)
     full_buff += buff
 
