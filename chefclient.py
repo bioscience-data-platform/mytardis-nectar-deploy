@@ -23,7 +23,14 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
     git checkout %s" % (settings.MYTARDIS_BRANCH_URL, settings.MYTARDIS_BRANCH_NAME)
     _run_sudo_command(ssh_client, command, settings, instance_id)
     
-    command = "scp -r -i %s %s/.chef %s@%s:/home/centos/" % (settings.PRIVATE_KEY, settings.PATH_CHEF_CONFIG, settings.USER_NAME, ip_address)
+    returned_working_directory = run_command(ssh_client, 'pwd')[0]
+    working_directory = returned_working_directory.split("\n")[0]
+    print "Working dir %s" % working_directory
+    command = "scp -r -i %s %s %s@%s:%s/" % (settings.PRIVATE_KEY, 
+                                             settings.PATH_CHEF_CONFIG, 
+                                             settings.USER_NAME, 
+                                             ip_address, 
+                                             working_directory)
     print command
     os.system(command)
     
@@ -35,7 +42,8 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
     _run_sudo_command(ssh_client, command, settings, instance_id)
     command = "knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife role from file /home/centos/mytardis-chef/roles/mytardis-bdp-milestone1.json\n"
+    command = "knife role from file %s/mytardis-chef/roles/mytardis-bdp-milestone1.json\n\
+    " % working_directory
     _run_sudo_command(ssh_client, command, settings, instance_id)
     command = "knife node run_list add  %s 'role[mytardis-bdp-milestone1]'" % instance_id
     _run_sudo_command(ssh_client, command, settings, instance_id)
@@ -63,6 +71,9 @@ def is_ssh_ready(settings, ip_address):
         except ssh.AuthenticationException:
             sleep(settings.CLOUD_SLEEP_INTERVAL)
             print ("Connecting to %s in progress ..." % ip_address)
+        except ssh.SSHException:
+            sleep(settings.CLOUD_SLEEP_INTERVAL)
+            print ("Connecting to %s in progress ..." % ip_address)            
     return ssh_ready
 
 
