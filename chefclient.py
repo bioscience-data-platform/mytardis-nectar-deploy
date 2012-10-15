@@ -11,7 +11,8 @@ def deploy_mytardis_with_chef(settings, ip_address, instance_id):
     os.chdir(settings.PATH_CHEF_CONFIG)
     _set_up_chef_client(settings, ip_address, instance_id, ssh_client)
     
-def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):   
+def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
+    _customize_prompt(settings, ip_address)  
     command = "knife bootstrap %s -x %s -i %s --sudo"  % (ip_address, settings.USER_NAME, settings.PRIVATE_KEY)
     os.system(command)
     command = "yum install -y git"
@@ -26,14 +27,19 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
     print command
     os.system(command)
     
-    command = "knife configure client ./client-config\n\
-    sudo  cp -r .chef/* /etc/chef/\n\
-    knife client list\n\
-    knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n\
-    knife role from file /home/centos/mytardis-chef/roles/mytardis-bdp-milestone1.json\n\
-    knife node run_list add  %s 'role[mytardis-bdp-milestone1]'" % instance_id
+    command = "knife configure client ./client-config\n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "sudo chef-client"
+    command = "unalias cp \n cp -rf .chef/* /etc/chef/\n"
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "knife client list\n"
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n"
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "knife role from file /home/centos/mytardis-chef/roles/mytardis-bdp-milestone1.json\n"
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "knife node run_list add  %s 'role[mytardis-bdp-milestone1]'" % instance_id
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "chef-client"
     _run_sudo_command(ssh_client, command, settings, instance_id)
     
 
@@ -58,6 +64,20 @@ def is_ssh_ready(settings, ip_address):
             sleep(settings.CLOUD_SLEEP_INTERVAL)
             print ("Connecting to %s in progress ..." % ip_address)
     return ssh_ready
+
+
+def _customize_prompt(settings, ip_address):
+    ssh_ready = is_ssh_ready(settings, ip_address)
+    if ssh_ready:
+        ssh_client = _open_connection(settings, ip_address)
+        home_dir = os.path.expanduser("~")
+        command_bash = 'echo \'export PS1="%s"\' >> .bash_profile' % settings.CUSTOM_PROMPT
+        command_csh = 'echo \'setenv PS1 "%s"\' >> .cshrc' % settings.CUSTOM_PROMPT
+        command = 'cd ~; %s; %s' % (command_bash, command_csh)
+        print("Customizing prompt ... %s " % settings.CUSTOM_PROMPT)
+        res = run_command(ssh_client, command)
+    else:
+        print "Unable to customize command prompt for VM instance %s" % (instance_id, ip)
 
 
 def _open_connection(settings, ip_address):
@@ -86,6 +106,11 @@ def _open_connection(settings, ip_address):
     return ssh_client
 
 
+def run_command(ssh_client, command):
+    stdin, stdout, stderr = ssh_client.exec_command(command)
+    res = stdout.readlines()
+    print("run_command_stdout=%s" % res)
+    return res
 
 
 def _run_sudo_command(ssh_client, command, settings, instance_id):
@@ -95,7 +120,7 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
     full_buff = ''
     buff = ''
     buff_size = 9999
-    while not '[%s@%s ~]$ ' % (settings.USER_NAME, instance_id) in buff:
+    while not settings.CUSTOM_PROMPT in buff:
         resp = chan.recv(buff_size)
         #print("resp=%s" % resp)
         buff += resp
@@ -105,7 +130,7 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
 
     chan.send("%s\n" % command)
     buff = ''
-    while not '[root@%s %s]# ' % (instance_id, settings.USER_NAME) in buff:
+    while not settings.CUSTOM_PROMPT in buff:
         resp = chan.recv(buff_size)
         print(resp)
         buff += resp
@@ -116,7 +141,7 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
 
     chan.send("exit\n")
     buff = ''
-    while not '[%s@%s ~]$ ' % (settings.USER_NAME, instance_id) in buff:
+    while not settings.CUSTOM_PROMPT in buff:
         resp = chan.recv(buff_size)
         #print("resp=%s" % resp)
         buff += resp

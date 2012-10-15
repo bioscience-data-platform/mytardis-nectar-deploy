@@ -36,7 +36,7 @@ def start():
             sys.exit(1)
 
     environ_fields = ['USER_NAME', 'PASSWORD', 'PRIVATE_KEY',
-                      'VM_SIZE', 'VM_IMAGE',
+                      'VM_SIZE', 'VM_IMAGE', 'CUSTOM_PROMPT',
                       'SLEEP_TIME', 'RETRY_ATTEMPTS',
                       'EC2_ACCESS_KEY', 'EC2_SECRET_KEY',
                       'CLOUD_SLEEP_INTERVAL', 'PRIVATE_KEY_NAME',
@@ -56,7 +56,7 @@ def start():
             file_val = ""
         # and make fake object to hold them
         setattr(settings, field, field_val)
-        #print("%s" % field_val)
+        #print("%s %s" % (field, field_val))
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "cm:t:d:",\
