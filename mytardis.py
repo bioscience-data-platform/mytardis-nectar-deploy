@@ -1,7 +1,7 @@
 from optparse import OptionParser
 import getopt
 
-import os 
+import os
 import sys
 import time
 
@@ -16,8 +16,8 @@ from chefclient import deploy_mytardis_with_chef
 from chefclient import test_mytardis_deployment
 from chefclient import is_ssh_ready
 
-def start():
 
+def start():
     #http://docs.python.org/howto/logging.html#logging-basic-tutorial
     '''
     logging.config.fileConfig('logging.conf')
@@ -40,7 +40,7 @@ def start():
                       'SLEEP_TIME', 'RETRY_ATTEMPTS',
                       'EC2_ACCESS_KEY', 'EC2_SECRET_KEY',
                       'CLOUD_SLEEP_INTERVAL', 'PRIVATE_KEY_NAME',
-                      'SECURITY_GROUP', 'PATH_CHEF_CONFIG', 
+                      'SECURITY_GROUP', 'PATH_CHEF_CONFIG',
                       'MYTARDIS_BRANCH_URL', 'MYTARDIS_BRANCH_NAME']
 
     import json
@@ -59,12 +59,11 @@ def start():
         #print("%s %s" % (field, field_val))
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "cm:t:d:",\
+        opts, args = getopt.getopt(sys.argv[1:], "cm:t:d:",
                                    ["create=", "mytardis", "test", "destroy"])
     except getopt.GetoptError:
    #print help info and exit:
         print("Couldn't parse arguments")
-        
         exit(1)
 
     step = ""
@@ -81,11 +80,11 @@ def start():
         if opt in ("-d", "--destroy"):
             step = "destroy"
             ip_address = val
-            
+
     if step == "create":
         connection = create_cloud_connection(settings)
         create_VM_instance(settings, connection)
-        
+
     elif step == "mytardis":
         connection = create_cloud_connection(settings)
         instance = get_this_instance(connection, ip_address, ip_given=True)
@@ -93,25 +92,25 @@ def start():
             instance_id = instance.name
             if is_ssh_ready(settings, ip_address):
                 deploy_mytardis_with_chef(settings, ip_address, instance_id)
-        
+
     elif step == "test":
         connection = create_cloud_connection(settings)
         instance = get_this_instance(connection, ip_address, ip_given=True)
         if instance:
             instance_id = instance.name
             if is_ssh_ready(settings, ip_address):
-                test_mytardis_deployment(settings,ip_address,instance_id)        
-            
+                test_mytardis_deployment(settings, ip_address, instance_id)
+
     elif step == "destroy":
         connection = create_cloud_connection(settings)
         destroy_VM_instance(settings, connection, ip_address)
-    
+
     else:
         print "Unknown Option"
-        
-        
+
+
 if __name__ == '__main__':
     begins = time.time()
     start()
     ends = time.time()
-    print("Total execution time: %d seconds" % (ends-begins))
+    print("Total execution time: %d seconds" % (ends - begins))
