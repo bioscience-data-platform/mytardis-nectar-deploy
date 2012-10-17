@@ -8,7 +8,9 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 
 import libcloud.security
-
+from chefclient import customize_prompt
+from chefclient import delete_chef_node_client
+ 
 libcloud.security.VERIFY_SSL_CERT = False
 
 NODE_STATE = ['RUNNING', 'REBOOTING', 'TERMINATED', 'PENDING', 'UNKNOWN']
@@ -37,21 +39,26 @@ def create_VM_instance(settings, connection):
     new_instance = None
     try:
         print("Creating VM instance")
-        new_instance = connection.create_node(name="New Centos VM instance",
+        new_instance = connection.create_node(name="iman-yusuf",
                                               size=size1, 
                                               image=image1, 
                                               ex_keyname=settings.PRIVATE_KEY_NAME,
                                               ex_securitygroup=settings.SECURITY_GROUP)
+        
     except Exception, e:
         if "QuotaError" in e[0]:
             print " Quota Limit Reached: "
         else:
             traceback.print_exc(file=sys.stdout)
+            raise
        
     if new_instance:
         ip_address = _wait_for_instance_to_start_running(settings, connection, new_instance)
+        customize_prompt(settings, ip_address)
+        #print "my name is %s" % new_instance.name
         print 'Created VM instance with IP: %s' % ip_address
         return ip_address
+            
               
 def destroy_VM_instance(settings, connection, ip_address):
     """
@@ -66,10 +73,14 @@ def destroy_VM_instance(settings, connection, ip_address):
             instance = get_this_instance(connection, ip_address, ip_given=True)
             if not confirm_teardown(settings):
                 return
+            instance_id = instance.id
+            ip_address = instance.public_ips[0]
+            delete_chef_node_client(settings, instance_id, ip_address)
             connection.destroy_node(instance)
             _wait_for_instance_to_terminate(settings, connection, ip_address)
         except Exception:
             traceback.print_exc(file=sys.stdout)
+            raise
     else:
         print "VM instance with IP %s doesn't exist" % ip_address
 
@@ -138,5 +149,5 @@ def _is_instance_running(connection, ip_address):
 	    if instance.public_ips[0] == ip_address:
                 return True
     return False
-       
 
+    

@@ -11,8 +11,8 @@ def deploy_mytardis_with_chef(settings, ip_address, instance_id):
     os.chdir(settings.PATH_CHEF_CONFIG)
     _set_up_chef_client(settings, ip_address, instance_id, ssh_client)
     
-def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
-    _customize_prompt(settings, ip_address)  
+    
+def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):  
     command = "knife bootstrap %s -x %s -i %s --sudo"  % (ip_address, settings.USER_NAME, settings.PRIVATE_KEY)
     os.system(command)
     command = "yum install -y git"
@@ -77,7 +77,8 @@ def is_ssh_ready(settings, ip_address):
     return ssh_ready
 
 
-def _customize_prompt(settings, ip_address):
+def customize_prompt(settings, ip_address):
+    print("Customizing prompt ... %s " % settings.CUSTOM_PROMPT)
     ssh_ready = is_ssh_ready(settings, ip_address)
     if ssh_ready:
         ssh_client = _open_connection(settings, ip_address)
@@ -85,11 +86,18 @@ def _customize_prompt(settings, ip_address):
         command_bash = 'echo \'export PS1="%s"\' >> .bash_profile' % settings.CUSTOM_PROMPT
         command_csh = 'echo \'setenv PS1 "%s"\' >> .cshrc' % settings.CUSTOM_PROMPT
         command = 'cd ~; %s; %s' % (command_bash, command_csh)
-        print("Customizing prompt ... %s " % settings.CUSTOM_PROMPT)
         res = run_command(ssh_client, command)
     else:
         print "Unable to customize command prompt for VM instance %s" % (instance_id, ip)
 
+
+def delete_chef_node_client(settings, instance_id, ip_address):
+    ssh_client = _open_connection(settings, ip_address)
+    command = "knife node delete -y %s\n" % instance_id
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    command = "knife client delete -y %s\n" % instance_id
+    _run_sudo_command(ssh_client, command, settings, instance_id)
+    
 
 def _open_connection(settings, ip_address):
     # open up the connection
@@ -98,7 +106,6 @@ def _open_connection(settings, ip_address):
     ssh_client.load_system_host_keys(os.path.expanduser(os.path.join("~",
                                                               ".ssh",
                                                               "known_hosts")))
-    
     ssh_client.set_missing_host_key_policy(ssh.AutoAddPolicy())
     
     #TODO: handle exceptions if connection does not work.
