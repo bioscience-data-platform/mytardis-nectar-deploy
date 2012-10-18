@@ -8,7 +8,6 @@ from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 
 import libcloud.security
-from chefclient import customize_prompt
 from chefclient import delete_chef_node_client
 
 libcloud.security.VERIFY_SSL_CERT = False
@@ -57,7 +56,6 @@ def create_VM_instance(settings, connection):
         ip_address = _wait_for_instance_to_start_running(settings,
                                                          connection,
                                                          new_instance)
-        customize_prompt(settings, ip_address)
         #print "my name is %s" % new_instance.name
         print 'Created VM instance with IP: %s' % ip_address
         return ip_address
@@ -106,7 +104,7 @@ def _wait_for_instance_to_start_running(settings, connection, instance):
         instance = get_this_instance(connection, instance_id)
         instance_state = instance.state
         instance_ip_list = instance.public_ips
-        print('Current status of Instance '
+        print('Current status of Instance '\
               + '%s: %s, IP: %s' % (instance_id,
                                     NODE_STATE[instance_state],
                                     instance_ip_list))
@@ -120,13 +118,13 @@ def _wait_for_instance_to_terminate(settings, connection, ip_address):
     instance_id = instance.name
 
     while _is_instance_running(connection, ip_address):
-        print('Current status of Instance '
+        print('Current status of Instance '\
               + '%s: %s, IP: [%s]' % (instance_id,
                                       NODE_STATE[NodeState.RUNNING],
                                       ip_address))
         time.sleep(settings.CLOUD_SLEEP_INTERVAL)
 
-    print('Current status of Instance '
+    print('Current status of Instance '\
           + '%s: %s, IP: [%s]' % (instance_id,
                                   NODE_STATE[NodeState.TERMINATED],
                                   ip_address))

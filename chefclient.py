@@ -7,6 +7,7 @@ import socket
 
 
 def deploy_mytardis_with_chef(settings, ip_address, instance_id):
+    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     os.chdir(settings.PATH_CHEF_CONFIG)
     _set_up_chef_client(settings, ip_address, instance_id, ssh_client)
@@ -44,11 +45,11 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
     _run_sudo_command(ssh_client, command, settings, instance_id)
     command = "knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife role from file "
+    command = "knife role from file "\
     + "%s/mytardis-chef/roles/mytardis-bdp-milestone1.json\n\
     " % working_directory
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife node run_list add  "
+    command = "knife node run_list add  "\
     + "%s 'role[mytardis-bdp-milestone1]'" % instance_id
     _run_sudo_command(ssh_client, command, settings, instance_id)
     command = "chef-client"
@@ -56,6 +57,7 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
 
 
 def test_mytardis_deployment(settings, ip_address, instance_id):
+    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     command = "cd /opt/mytardis/current\n\
     sudo -u mytardis bin/django test --settings=tardis.test_settings"
@@ -87,18 +89,19 @@ def customize_prompt(settings, ip_address):
     if ssh_ready:
         ssh_client = _open_connection(settings, ip_address)
         home_dir = os.path.expanduser("~")
-        command_bash = 'echo \'export '
+        command_bash = 'echo \'export '\
         + 'PS1="%s"\' >> .bash_profile' % settings.CUSTOM_PROMPT
-        command_csh = 'echo \'setenv '
+        command_csh = 'echo \'setenv '\
         + 'PS1 "%s"\' >> .cshrc' % settings.CUSTOM_PROMPT
         command = 'cd ~; %s; %s' % (command_bash, command_csh)
         res = run_command(ssh_client, command)
     else:
-        print "Unable to customize command prompt"
+        print "Unable to customize command prompt"\
         + " for VM instance %s" % (instance_id, ip)
 
 
 def delete_chef_node_client(settings, instance_id, ip_address):
+    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     command = "knife node delete -y %s\n" % instance_id
     _run_sudo_command(ssh_client, command, settings, instance_id)
