@@ -36,7 +36,7 @@ def start():
             sys.exit(1)
 
     environ_fields = ['USER_NAME', 'PASSWORD', 'PRIVATE_KEY',
-                      'VM_SIZE', 'VM_IMAGE', 'CUSTOM_PROMPT',
+                      'VM_SIZE', 'VM_IMAGE', 'VM_NAME', 'CUSTOM_PROMPT',
                       'SLEEP_TIME', 'RETRY_ATTEMPTS',
                       'EC2_ACCESS_KEY', 'EC2_SECRET_KEY',
                       'CLOUD_SLEEP_INTERVAL', 'PRIVATE_KEY_NAME',

@@ -40,7 +40,7 @@ def create_VM_instance(settings, connection):
         print("Creating VM instance")
         private_key = settings.PRIVATE_KEY_NAME
         security_group = settings.SECURITY_GROUP
-        new_instance = connection.create_node(name="iman-yusuf",
+        new_instance = connection.create_node(name=settings.VM_NAME,
                                               size=size1,
                                               image=image1,
                                               ex_keyname=private_key,
@@ -104,7 +104,7 @@ def _wait_for_instance_to_start_running(settings, connection, instance):
         instance = get_this_instance(connection, instance_id)
         instance_state = instance.state
         instance_ip_list = instance.public_ips
-        print('Current status of Instance '\
+        print('Current status of Instance '
               + '%s: %s, IP: %s' % (instance_id,
                                     NODE_STATE[instance_state],
                                     instance_ip_list))
@@ -118,13 +118,13 @@ def _wait_for_instance_to_terminate(settings, connection, ip_address):
     instance_id = instance.name
 
     while _is_instance_running(connection, ip_address):
-        print('Current status of Instance '\
+        print('Current status of Instance '
               + '%s: %s, IP: [%s]' % (instance_id,
                                       NODE_STATE[NodeState.RUNNING],
                                       ip_address))
         time.sleep(settings.CLOUD_SLEEP_INTERVAL)
 
-    print('Current status of Instance '\
+    print('Current status of Instance '
           + '%s: %s, IP: [%s]' % (instance_id,
                                   NODE_STATE[NodeState.TERMINATED],
                                   ip_address))
