@@ -14,44 +14,53 @@ def deploy_mytardis_with_chef(settings, ip_address, instance_id):
 
 
 def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
-    command = "knife bootstrap %s -x %s -i %s --sudo\
-    " % (ip_address, settings.USER_NAME, settings.PRIVATE_KEY)
+    command = "knife bootstrap %s -x %s -i %s --sudo" \
+              % (ip_address, settings.USER_NAME, settings.PRIVATE_KEY)
     os.system(command)
     command = "yum install -y git"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "git clone %s\n\
-    cd mytardis-chef\n\
-    git branch -a\n\
-    git checkout %s" % (settings.MYTARDIS_BRANCH_URL,
-                        settings.MYTARDIS_BRANCH_NAME)
+
+    command = "git clone %s; " % settings.MYTARDIS_BRANCH_URL +\
+              "cd mytardis-chef; git branch -a;" +\
+              "git checkout %s; " % (settings.MYTARDIS_BRANCH_NAME) +\
+              "git branch -a \n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
     returned_working_directory = run_command(ssh_client, 'pwd')[0]
-    working_directory = returned_working_directory.split("\n")[0]
-    print "Working dir %s" % working_directory
+    home_directory = returned_working_directory.split("\n")[0]
+    print "Working dir %s" % home_directory
 
     command = "scp -r -i %s %s %s@%s:%s/" % (settings.PRIVATE_KEY,
                                              settings.PATH_CHEF_CONFIG,
                                              settings.USER_NAME,
                                              ip_address,
-                                             working_directory)
-    print command
+                                             home_directory)
     os.system(command)
+    print command
 
-    command = "knife configure client ./client-config\n"
+    command = "knife configure client %s/client-config\n" % home_directory
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "unalias cp \n cp -rf .chef/* /etc/chef/\n"
+
+    command = "unalias cp; cp -rfy %s/chef/* /etc/chef/\n" % home_directory
     _run_sudo_command(ssh_client, command, settings, instance_id)
+
     command = "knife client list\n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife cookbook upload -o ./site-cookbooks/:./cookbooks/ -a -d\n"
+
+    command = "knife cookbook upload -o " +\
+              "%s/mytardis-chef/site-cookbooks/:%s/mytardis-chef/cookbooks/ "\
+              % (home_directory, home_directory) +\
+              "-a -d\n"
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife role from file "\
-    + "%s/mytardis-chef/roles/mytardis-bdp-milestone1.json\n\
-    " % working_directory
+
+    command = "knife role from file " +\
+              "%s/mytardis-chef/roles/mytardis-bdp-milestone1.json\n" \
+              % home_directory
     _run_sudo_command(ssh_client, command, settings, instance_id)
-    command = "knife node run_list add  "\
-    + "%s 'role[mytardis-bdp-milestone1]'" % instance_id
+
+    command = "knife node run_list add " +\
+              "%s 'role[mytardis-bdp-milestone1]' \n" % instance_id
     _run_sudo_command(ssh_client, command, settings, instance_id)
+
     command = "chef-client"
     _run_sudo_command(ssh_client, command, settings, instance_id)
 
@@ -59,8 +68,9 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
 def test_mytardis_deployment(settings, ip_address, instance_id):
     customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
-    command = "cd /opt/mytardis/current\n\
-    sudo -u mytardis bin/django test --settings=tardis.test_settings"
+    command = "cd /opt/mytardis/current; " +\
+              "sudo -u mytardis bin/django " +\
+              "test --settings=tardis.test_settings"
     res = _run_sudo_command(ssh_client, command, settings, instance_id)
 
 
@@ -90,15 +100,17 @@ def customize_prompt(settings, ip_address):
     if ssh_ready:
         ssh_client = _open_connection(settings, ip_address)
         home_dir = os.path.expanduser("~")
-        command_bash = 'echo \'export '\
-        + 'PS1="%s"\' >> .bash_profile' % settings.CUSTOM_PROMPT
-        command_csh = 'echo \'setenv '\
-        + 'PS1 "%s"\' >> .cshrc' % settings.CUSTOM_PROMPT
+        command_bash = 'echo \'export ' +\
+                       'PS1="%s"\' >> .bash_profile' \
+                       % settings.CUSTOM_PROMPT
+        command_csh = 'echo \'setenv ' +\
+                      'PS1 "%s"\' >> .cshrc' \
+                      % settings.CUSTOM_PROMPT
         command = 'cd ~; %s; %s' % (command_bash, command_csh)
         res = run_command(ssh_client, command)
     else:
-        print "Unable to customize command prompt"\
-        + " for VM instance %s" % (instance_id, ip)
+        print "Unable to customize command prompt" +\
+              "for VM instance %s" % (ip_address)
 
 
 def delete_chef_node_client(settings, instance_id, ip_address):
@@ -177,5 +189,5 @@ def _run_sudo_command(ssh_client, command, settings, instance_id):
     full_buff += buff
 
     chan.close()
-    print full_buff
+    #print full_buff
     return (full_buff, '')
