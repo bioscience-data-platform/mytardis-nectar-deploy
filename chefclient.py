@@ -7,7 +7,6 @@ import socket
 
 
 def deploy_mytardis_with_chef(settings, ip_address, instance_id):
-    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     os.chdir(settings.PATH_CHEF_CONFIG)
     _set_up_chef_client(settings, ip_address, instance_id, ssh_client)
@@ -66,7 +65,6 @@ def _set_up_chef_client(settings, ip_address, instance_id, ssh_client):
 
 
 def test_mytardis_deployment(settings, ip_address, instance_id):
-    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     command = "cd /opt/mytardis/current; " +\
               "sudo -u mytardis bin/django " +\
@@ -114,7 +112,6 @@ def customize_prompt(settings, ip_address):
 
 
 def delete_chef_node_client(settings, instance_id, ip_address):
-    customize_prompt(settings, ip_address)
     ssh_client = _open_connection(settings, ip_address)
     command = "knife node delete -y %s\n" % instance_id
     _run_sudo_command(ssh_client, command, settings, instance_id)
