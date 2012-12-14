@@ -1,5 +1,3 @@
-**NB**: *Since the Folsom upgrade of the NeCTAR cloud, the mytardis-nectar-deploy package fails to run to completion. The package is being fixed to work with the current NeCTAR cloud. The fix will be posted soon.*
- 
 ##Assumptions
 
 The commands in this tool are executed from a Chef workstation
