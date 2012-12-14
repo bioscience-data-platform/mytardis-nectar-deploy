@@ -7,10 +7,10 @@ import time
 
 import logging
 
-from nectarconnector import create_cloud_connection
-from nectarconnector import create_VM_instance
-from nectarconnector import destroy_VM_instance
-from nectarconnector import get_this_instance
+from botocloudconnector import create_cloud_connection
+from botocloudconnector import create_VM_instance
+from botocloudconnector import destroy_VM_instance
+from botocloudconnector import get_this_instance
 
 from chefclient import deploy_mytardis_with_chef
 from chefclient import test_mytardis_deployment
@@ -32,7 +32,7 @@ def start():
         if os.path.exists(config_file):
             config.read(config_file)
         else:
-            print("no configuration file found")
+            print("No configuration file found")
             sys.exit(1)
 
     environ_fields = ['USER_NAME', 'PASSWORD', 'PRIVATE_KEY',
@@ -82,28 +82,29 @@ def start():
             ip_address = val
 
     if step == "create":
-        connection = create_cloud_connection(settings)
-        create_VM_instance(settings, connection)
+        create_VM_instance(settings)
 
     elif step == "mytardis":
-        connection = create_cloud_connection(settings)
-        instance = get_this_instance(connection, ip_address, ip_given=True)
+        instance = get_this_instance(settings,
+            ip_address, ip_given=True)
         if instance:
-            instance_id = instance.name
-            if is_ssh_ready(settings, ip_address):
-                deploy_mytardis_with_chef(settings, ip_address, instance_id)
+            deploy_mytardis_with_chef(settings,
+                ip_address, instance.id)
+        else:
+            print "VM with IP [%s] doesn't exist" % ip_address
+
 
     elif step == "test":
-        connection = create_cloud_connection(settings)
-        instance = get_this_instance(connection, ip_address, ip_given=True)
+        instance = get_this_instance(settings,
+            ip_address, ip_given=True)
         if instance:
-            instance_id = instance.name
-            if is_ssh_ready(settings, ip_address):
-                test_mytardis_deployment(settings, ip_address, instance_id)
+            test_mytardis_deployment(settings,
+                ip_address, instance.id)
+        else:
+            print "VM with IP [%s] doesn't exist" % ip_address
 
     elif step == "destroy":
-        connection = create_cloud_connection(settings)
-        destroy_VM_instance(settings, connection, ip_address)
+        destroy_VM_instance(settings, ip_address)
 
     else:
         print "Unknown Option"
